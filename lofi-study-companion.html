@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lofi Study Companion</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Roboto:wght@300;400;500&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #2d3436 0%, #1e272e 50%, #34495e 100%);
+            min-height: 100vh;
+            color: #ecf0f1;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.05"/></svg>');
+            pointer-events: none;
+            opacity: 0.3;
+            z-index: 1;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: 2.5em;
+            color: #e8a87c;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            color: #95a5a6;
+            font-size: 0.95em;
+            font-weight: 300;
+        }
+
+        /* Streak Display */
+        .streak-banner {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, rgba(232, 168, 124, 0.2) 0%, rgba(195, 141, 92, 0.2) 100%);
+            border: 2px solid rgba(232, 168, 124, 0.4);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .streak-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .streak-number {
+            font-family: 'Space Mono', monospace;
+            font-size: 2.5em;
+            color: #e8a87c;
+            font-weight: bold;
+        }
+
+        .streak-label {
+            color: #95a5a6;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .streak-fire {
+            font-size: 1.5em;
+            animation: flicker 1.5s ease-in-out infinite;
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .card {
+            background: rgba(52, 73, 94, 0.4);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(236, 240, 241, 0.1);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .card-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.3em;
+            color: #e8a87c;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Focus Mode Toggle */
+        .focus-mode-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(44, 62, 80, 0.5);
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .focus-mode-toggle.active {
+            border-color: #e8a87c;
+            background: rgba(232, 168, 124, 0.1);
+        }
+
+        .focus-mode-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #ecf0f1;
+            font-weight: 500;
+        }
+
+        .focus-mode-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: rgba(44, 62, 80, 0.8);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .focus-mode-switch.active {
+            background: #e8a87c;
+        }
+
+        .focus-mode-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .focus-mode-switch.active::after {
+            left: 33px;
+        }
+
+        /* Distraction Counter */
+        .distraction-counter {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid rgba(231, 76, 60, 0.4);
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .distraction-counter span {
+            color: #e74c3c;
+            font-weight: 500;
+        }
+
+        .distraction-count {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.3em;
+            color: #e74c3c;
+        }
+
+        /* Task System */
+        .task-input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .task-input {
+            flex: 1;
+            padding: 12px 15px;
+            background: rgba(44, 62, 80, 0.6);
+            border: 1px solid rgba(236, 240, 241, 0.2);
+            border-radius: 8px;
+            color: #ecf0f1;
+            font-size: 0.95em;
+            font-family: 'Roboto', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .task-input:focus {
+            outline: none;
+            border-color: #e8a87c;
+            background: rgba(44, 62, 80, 0.8);
+        }
+
+        .task-input::placeholder {
+            color: rgba(236, 240, 241, 0.4);
+        }
+
+        .category-select {
+            padding: 12px;
+            background: rgba(44, 62, 80, 0.6);
+            border: 1px solid rgba(236, 240, 241, 0.2);
+            border-radius: 8px;
+            color: #ecf0f1;
+            font-size: 0.95em;
+            cursor: pointer;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .category-select:focus {
+            outline: none;
+            border-color: #e8a87c;
+        }
+
+        .add-task-btn {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #e8a87c 0%, #c38d5c 100%);
+            border: none;
+            border-radius: 8px;
+            color: #2d3436;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .add-task-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(232, 168, 124, 0.4);
+        }
+
+        .tasks-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .tasks-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .tasks-list::-webkit-scrollbar-track {
+            background: rgba(44, 62, 80, 0.3);
+            border-radius: 10px;
+        }
+
+        .tasks-list::-webkit-scrollbar-thumb {
+            background: #e8a87c;
+            border-radius: 10px;
+        }
+
+        .task-item {
+            background: rgba(44, 62, 80, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 4px solid #e8a87c;
+            transition: all 0.3s ease;
+        }
+
+        .task-item:hover {
+            background: rgba(44, 62, 80, 0.7);
+            transform: translateX(5px);
+        }
+
+        .task-item.completed {
+            opacity: 0.6;
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: #95a5a6;
+        }
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #e8a87c;
+        }
+
+        .task-text {
+            flex: 1;
+            color: #ecf0f1;
+            font-size: 0.95em;
+        }
+
+        .task-category {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 500;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .category-study {
+            background: rgba(52, 152, 219, 0.3);
+            color: #3498db;
+            border: 1px solid rgba(52, 152, 219, 0.5);
+        }
+
+        .category-workout {
+            background: rgba(231, 76, 60, 0.3);
+            color: #e74c3c;
+            border: 1px solid rgba(231, 76, 60, 0.5);
+        }
+
+        .category-personal {
+            background: rgba(155, 89, 182, 0.3);
+            color: #9b59b6;
+            border: 1px solid rgba(155, 89, 182, 0.5);
+        }
+
+        .delete-task-btn {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid rgba(231, 76, 60, 0.4);
+            color: #e74c3c;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s ease;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .delete-task-btn:hover {
+            background: rgba(231, 76, 60, 0.4);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #95a5a6;
+            font-style: italic;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        /* Pomodoro Timer */
+        .timer-display {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .timer-mode {
+            color: #e8a87c;
+            font-family: 'Space Mono', monospace;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .timer-time {
+            font-family: 'Space Mono', monospace;
+            font-size: 4em;
+            color: #ecf0f1;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(232, 168, 124, 0.3);
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .timer-btn {
+            padding: 12px 30px;
+            background: rgba(44, 62, 80, 0.6);
+            border: 1px solid rgba(236, 240, 241, 0.2);
+            border-radius: 8px;
+            color: #ecf0f1;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9em;
+        }
+
+        .timer-btn:hover {
+            background: rgba(44, 62, 80, 0.8);
+            border-color: #e8a87c;
+        }
+
+        .timer-btn.primary {
+            background: linear-gradient(135deg, #e8a87c 0%, #c38d5c 100%);
+            color: #2d3436;
+            border: none;
+        }
+
+        .timer-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(232, 168, 124, 0.4);
+        }
+
+        .pomodoro-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(236, 240, 241, 0.1);
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: 'Space Mono', monospace;
+            font-size: 2em;
+            color: #e8a87c;
+            display: block;
+        }
+
+        .stat-label {
+            color: #95a5a6;
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+
+        /* Music Player */
+        .music-player {
+            padding: 20px;
+        }
+
+        .music-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .play-pause-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e8a87c 0%, #c38d5c 100%);
+            border: none;
+            color: #2d3436;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .play-pause-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(232, 168, 124, 0.4);
+        }
+
+        .now-playing {
+            flex: 1;
+        }
+
+        .track-title {
+            color: #ecf0f1;
+            font-size: 0.95em;
+            margin-bottom: 5px;
+        }
+
+        .track-artist {
+            color: #95a5a6;
+            font-size: 0.85em;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .volume-slider {
+            flex: 1;
+            height: 4px;
+            -webkit-appearance: none;
+            background: rgba(44, 62, 80, 0.6);
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #e8a87c;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            background: #e8a87c;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        /* Character Companion */
+        .character-companion {
+            position: fixed;
+            bottom: 80px;
+            right: 80px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .character-sprite {
+            width: 120px;
+            height: 120px;
+            font-size: 100px;
+            animation: float 3s ease-in-out infinite;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
+            transition: all 0.5s ease;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .character-sprite.happy {
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-20px) scale(1.05); }
+        }
+
+        .character-sprite.celebrating {
+            animation: celebrate 0.8s ease-in-out infinite;
+        }
+
+        @keyframes celebrate {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(-10deg) scale(1.1); }
+            75% { transform: rotate(10deg) scale(1.1); }
+        }
+
+        .character-sprite.sad {
+            animation: sad 2s ease-in-out infinite;
+            filter: grayscale(0.3) drop-shadow(0 10px 20px rgba(0,0,0,0.3));
+        }
+
+        @keyframes sad {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(5px); }
+        }
+
+        .character-dialogue {
+            background: rgba(52, 73, 94, 0.95);
+            border: 2px solid rgba(232, 168, 124, 0.5);
+            border-radius: 15px;
+            padding: 15px 20px;
+            max-width: 280px;
+            color: #ecf0f1;
+            font-size: 0.9em;
+            line-height: 1.5;
+            position: relative;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .character-dialogue::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            right: 30px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid rgba(52, 73, 94, 0.95);
+        }
+
+        .character-name {
+            color: #e8a87c;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-family: 'Space Mono', monospace;
+        }
+
+        /* Celebration Overlay */
+        .celebration-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+            display: none;
+        }
+
+        .celebration-overlay.active {
+            display: block;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #e8a87c;
+            animation: confettiFall 3s linear;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                order: -1;
+            }
+
+            .character-companion {
+                bottom: 30px;
+                right: 30px;
+            }
+
+            .character-sprite {
+                width: 80px;
+                height: 80px;
+                font-size: 70px;
+            }
+
+            .character-dialogue {
+                max-width: 200px;
+                font-size: 0.85em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎧 Lofi Study Companion</h1>
+            <p>stay focused, stay chill</p>
+        </div>
+
+        <!-- Streak Banner -->
+        <div class="streak-banner">
+            <div class="streak-item">
+                <div class="streak-number" id="currentStreak">0</div>
+                <div class="streak-label">🔥 Current Streak</div>
+            </div>
+            <div class="streak-item">
+                <div class="streak-number" id="bestStreak">0</div>
+                <div class="streak-label">⭐ Best Streak</div>
+            </div>
+            <div class="streak-item">
+                <div class="streak-number" id="totalFocusTime">0h</div>
+                <div class="streak-label">⏱️ Total Focus</div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Focus Mode Card -->
+            <div class="card">
+                <div class="card-title">
+                    <span>🎯</span>
+                    <span>Focus Mode</span>
+                </div>
+
+                <div class="focus-mode-toggle" id="focusModeToggle">
+                    <div class="focus-mode-label">
+                        <span>Shield against distractions</span>
+                    </div>
+                    <div class="focus-mode-switch" id="focusModeSwitch"></div>
+                </div>
+
+                <div class="distraction-counter" id="distractionCounter" style="display: none;">
+                    <span>⚠️ Tab switches detected:</span>
+                    <span class="distraction-count" id="distractionCount">0</span>
+                </div>
+            </div>
+
+            <!-- Tasks Card -->
+            <div class="card">
+                <div class="card-title">
+                    <span>📝</span>
+                    <span>Tasks</span>
+                </div>
+                
+                <div class="task-input-container">
+                    <input type="text" class="task-input" id="taskInput" placeholder="what needs to be done?">
+                    <select class="category-select" id="categorySelect">
+                        <option value="study">📚 Study</option>
+                        <option value="workout">💪 Workout</option>
+                        <option value="personal">✨ Personal</option>
+                    </select>
+                    <button class="add-task-btn" id="addTaskBtn">Add</button>
+                </div>
+
+                <div class="tasks-list" id="tasksList">
+                    <div class="empty-state">no tasks yet. add one to get started!</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Pomodoro Timer Card -->
+            <div class="card">
+                <div class="card-title">
+                    <span>⏱️</span>
+                    <span>Pomodoro</span>
+                </div>
+                
+                <div class="timer-display">
+                    <div class="timer-mode" id="timerMode">FOCUS TIME</div>
+                    <div class="timer-time" id="timerDisplay">25:00</div>
+                    
+                    <div class="timer-controls">
+                        <button class="timer-btn primary" id="startBtn">Start</button>
+                        <button class="timer-btn" id="pauseBtn" style="display:none;">Pause</button>
+                        <button class="timer-btn" id="resetBtn">Reset</button>
+                        <button class="timer-btn" id="skipBtn">Skip</button>
+                    </div>
+
+                    <div class="pomodoro-stats">
+                        <div class="stat">
+                            <span class="stat-value" id="pomodoroCount">0</span>
+                            <span class="stat-label">pomodoros</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value" id="tasksCompleted">0</span>
+                            <span class="stat-label">tasks done</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Music Player Card -->
+            <div class="card">
+                <div class="card-title">
+                    <span>🎵</span>
+                    <span>Lofi Beats</span>
+                </div>
+                
+                <div class="music-player">
+                    <div class="music-controls">
+                        <button class="play-pause-btn" id="playPauseBtn">▶</button>
+                        <div class="now-playing">
+                            <div class="track-title">Lofi Hip Hop Radio</div>
+                            <div class="track-artist">beats to study/relax to</div>
+                        </div>
+                    </div>
+                    <div class="volume-control">
+                        <span style="color: #95a5a6; font-size: 0.9em;">🔊</span>
+                        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="50">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Character Companion -->
+    <div class="character-companion" id="characterCompanion">
+        <div class="character-dialogue" id="characterDialogue" style="display: none;">
+            <div class="character-name">Mimi</div>
+            <div id="dialogueText">Let's get started! 💪</div>
+        </div>
+        <div class="character-sprite" id="characterSprite">🌸</div>
+    </div>
+
+    <!-- Celebration Overlay -->
+    <div class="celebration-overlay" id="celebrationOverlay"></div>
+
+    <!-- Audio Elements -->
+    <audio id="audioPlayer" loop>
+        <source src="https://stream.zeno.fm/f3wvbbqmdg8uv" type="audio/mpeg">
+    </audio>
+
+    <audio id="timerSound">
+        <source src="data:audio/wav;base64,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" type="audio/wav">
+    </audio>
+
+    <script>
+        // ============================================
+        // STATE MANAGEMENT
+        // ============================================
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        let currentStreak = parseInt(localStorage.getItem('currentStreak')) || 0;
+        let bestStreak = parseInt(localStorage.getItem('bestStreak')) || 0;
+        let totalFocusMinutes = parseInt(localStorage.getItem('totalFocusMinutes')) || 0;
+        let pomodorosCompleted = parseInt(localStorage.getItem('pomodoros')) || 0;
+        let distractionCount = 0;
+        let focusModeActive = false;
+        let sessionDistractions = 0;
+
+        // Timer state
+        let timerInterval;
+        let timeLeft = 25 * 60;
+        let isWorkSession = true;
+        let isRunning = false;
+
+        // Character state
+        let characterMood = 'neutral'; // neutral, happy, celebrating, sad, worried
+
+        // ============================================
+        // CHARACTER SYSTEM
+        // ============================================
+        const characterSprites = {
+            neutral: '🌸',
+            happy: '✨',
+            celebrating: '🎉',
+            sad: '💭',
+            worried: '😟',
+            studying: '📚'
+        };
+
+        const dialogues = {
+            welcome: [
+                "Hey! Ready to crush some goals today? 💪",
+                "Let's make today productive! ✨",
+                "I'm here to keep you focused! Let's go! 🎯"
+            ],
+            timerStart: [
+                "Focus time! You got this! 🔥",
+                "Let's get in the zone! 25 minutes of pure focus! ⏱️",
+                "Time to work! I'll be here cheering you on! 💪"
+            ],
+            timerComplete: [
+                "Amazing work! Time for a well-deserved break! 🎉",
+                "You crushed it! Take 5 minutes to recharge! ⭐",
+                "Pomodoro complete! You're on fire! 🔥"
+            ],
+            breakStart: [
+                "Break time! Stretch, hydrate, relax! 😊",
+                "Rest up! You've earned it! ✨",
+                "5 minutes to chill. Come back refreshed! 💙"
+            ],
+            firstDistraction: [
+                "Hey... I noticed you left. Everything okay? 👀",
+                "Staying focused is tough, but you can do it! 💪",
+                "Let's try to stay on this tab, yeah? 🎯"
+            ],
+            multipleDistractions: [
+                "I'm worried... That's a lot of tab switches. Need help? 😟",
+                "Focus mode is on for a reason! Let's get back on track! ⚠️",
+                "This is tough, but don't give up! Close those other tabs! 💙"
+            ],
+            streakMilestone: [
+                "3 POMODOROS IN A ROW! You're absolutely crushing it! 🎉🔥",
+                "STREAK ALERT! This is what peak performance looks like! ⭐",
+                "WOW! Your focus is incredible today! Keep going! 🚀"
+            ],
+            streakBroken: [
+                "It's okay! Every master has failed more than the beginner has tried. Let's start fresh! 💪",
+                "Streaks end, but our determination doesn't! Ready to start a new one? ✨",
+                "No worries! Even the best need breaks. Let's build a new streak! 🌟"
+            ],
+            encouragement: [
+                "You're doing great! One Pomodoro at a time! 💪",
+                "I believe in you! Let's keep this momentum! ✨",
+                "Small steps lead to big achievements! Keep going! 🎯"
+            ],
+            taskComplete: [
+                "Nice! Another task done! Feels good, right? ✓",
+                "That's what I'm talking about! Progress! 🎉",
+                "Boom! One step closer to your goals! 💪"
+            ]
+        };
+
+        function updateCharacterMood(mood) {
+            characterMood = mood;
+            const sprite = document.getElementById('characterSprite');
+            sprite.textContent = characterSprites[mood];
+            sprite.className = 'character-sprite ' + mood;
+        }
+
+        function showDialogue(category) {
+            const dialogueBox = document.getElementById('characterDialogue');
+            const dialogueText = document.getElementById('dialogueText');
+            const messages = dialogues[category];
+            const message = messages[Math.floor(Math.random() * messages.length)];
+            
+            dialogueText.textContent = message;
+            dialogueBox.style.display = 'block';
+            
+            setTimeout(() => {
+                dialogueBox.style.display = 'none';
+            }, 5000);
+        }
+
+        function triggerCelebration() {
+            const overlay = document.getElementById('celebrationOverlay');
+            overlay.classList.add('active');
+            
+            // Create confetti
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.background = ['#e8a87c', '#3498db', '#e74c3c', '#9b59b6'][Math.floor(Math.random() * 4)];
+                confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                overlay.appendChild(confetti);
+            }
+            
+            setTimeout(() => {
+                overlay.classList.remove('active');
+                overlay.innerHTML = '';
+            }, 3000);
+        }
+
+        // ============================================
+        // FOCUS MODE & DISTRACTION TRACKING
+        // ============================================
+        const focusModeSwitch = document.getElementById('focusModeSwitch');
+        const focusModeToggle = document.getElementById('focusModeToggle');
+        const distractionCounter = document.getElementById('distractionCounter');
+        const distractionCountEl = document.getElementById('distractionCount');
+
+        focusModeToggle.addEventListener('click', () => {
+            focusModeActive = !focusModeActive;
+            focusModeSwitch.classList.toggle('active');
+            focusModeToggle.classList.toggle('active');
+            
+            if (focusModeActive) {
+                distractionCounter.style.display = 'flex';
+                sessionDistractions = 0;
+                distractionCount = 0;
+                distractionCountEl.textContent = '0';
+            } else {
+                distractionCounter.style.display = 'none';
+            }
+        });
+
+        // Track when user leaves/returns to tab
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && focusModeActive && isRunning) {
+                // User left during focus session
+                sessionDistractions++;
+                distractionCount++;
+                distractionCountEl.textContent = distractionCount;
+                
+                if (sessionDistractions === 1) {
+                    updateCharacterMood('worried');
+                } else if (sessionDistractions >= 3) {
+                    updateCharacterMood('sad');
+                }
+            } else if (!document.hidden && sessionDistractions > 0 && isRunning) {
+                // User returned
+                if (sessionDistractions === 1) {
+                    showDialogue('firstDistraction');
+                } else if (sessionDistractions >= 3) {
+                    showDialogue('multipleDistractions');
+                }
+            }
+        });
+
+        // ============================================
+        // TASK SYSTEM
+        // ============================================
+        const taskInput = document.getElementById('taskInput');
+        const categorySelect = document.getElementById('categorySelect');
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        const tasksList = document.getElementById('tasksList');
+        const tasksCompletedEl = document.getElementById('tasksCompleted');
+
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        function renderTasks() {
+            if (tasks.length === 0) {
+                tasksList.innerHTML = '<div class="empty-state">no tasks yet. add one to get started!</div>';
+                return;
+            }
+
+            tasksList.innerHTML = '';
+            tasks.forEach((task, index) => {
+                const taskItem = document.createElement('div');
+                taskItem.className = `task-item ${task.completed ? 'completed' : ''}`;
+                taskItem.innerHTML = `
+                    <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${index})">
+                    <span class="task-text">${task.text}</span>
+                    <span class="task-category category-${task.category}">${getCategoryIcon(task.category)} ${task.category}</span>
+                    <button class="delete-task-btn" onclick="deleteTask(${index})">×</button>
+                `;
+                tasksList.appendChild(taskItem);
+            });
+
+            updateTasksCompleted();
+        }
+
+        function getCategoryIcon(category) {
+            const icons = { study: '📚', workout: '💪', personal: '✨' };
+            return icons[category] || '✨';
+        }
+
+        function addTask() {
+            const text = taskInput.value.trim();
+            if (text === '') return;
+
+            tasks.push({
+                text: text,
+                category: categorySelect.value,
+                completed: false
+            });
+
+            taskInput.value = '';
+            saveTasks();
+            renderTasks();
+        }
+
+        window.toggleTask = function(index) {
+            tasks[index].completed = !tasks[index].completed;
+            
+            if (tasks[index].completed) {
+                updateCharacterMood('happy');
+                showDialogue('taskComplete');
+            }
+            
+            saveTasks();
+            renderTasks();
+        }
+
+        window.deleteTask = function(index) {
+            tasks.splice(index, 1);
+            saveTasks();
+            renderTasks();
+        }
+
+        function updateTasksCompleted() {
+            const completed = tasks.filter(t => t.completed).length;
+            tasksCompletedEl.textContent = completed;
+        }
+
+        addTaskBtn.addEventListener('click', addTask);
+        taskInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTask();
+        });
+
+        // ============================================
+        // POMODORO TIMER
+        // ============================================
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timerMode = document.getElementById('timerMode');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const skipBtn = document.getElementById('skipBtn');
+        const pomodoroCount = document.getElementById('pomodoroCount');
+        const timerSound = document.getElementById('timerSound');
+
+        pomodoroCount.textContent = pomodorosCompleted;
+
+        function updateDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function updateStreakDisplay() {
+            document.getElementById('currentStreak').textContent = currentStreak;
+            document.getElementById('bestStreak').textContent = bestStreak;
+            const hours = Math.floor(totalFocusMinutes / 60);
+            document.getElementById('totalFocusTime').textContent = hours + 'h';
+        }
+
+        function startTimer() {
+            if (isRunning) return;
+            isRunning = true;
+            startBtn.style.display = 'none';
+            pauseBtn.style.display = 'inline-block';
+
+            sessionDistractions = 0;
+            updateCharacterMood('studying');
+            showDialogue('timerStart');
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateDisplay();
+
+                if (timeLeft === 0) {
+                    clearInterval(timerInterval);
+                    timerSound.play();
+                    completeSession();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            isRunning = false;
+            clearInterval(timerInterval);
+            startBtn.style.display = 'inline-block';
+            pauseBtn.style.display = 'none';
+            updateCharacterMood('neutral');
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            timeLeft = isWorkSession ? 25 * 60 : 5 * 60;
+            updateDisplay();
+        }
+
+        function skipSession() {
+            pauseTimer();
+            completeSession();
+        }
+
+        function completeSession() {
+            if (isWorkSession) {
+                // Completed a focus session
+                pomodorosCompleted++;
+                totalFocusMinutes += 25;
+                
+                // Update streak
+                if (sessionDistractions <= 2) {
+                    currentStreak++;
+                    if (currentStreak > bestStreak) {
+                        bestStreak = currentStreak;
+                    }
+                    
+                    updateCharacterMood('celebrating');
+                    showDialogue('timerComplete');
+                    
+                    if (currentStreak % 3 === 0) {
+                        showDialogue('streakMilestone');
+                        triggerCelebration();
+                    }
+                } else {
+                    // Too many distractions, streak broken
+                    if (currentStreak > 0) {
+                        showDialogue('streakBroken');
+                    }
+                    currentStreak = 0;
+                    updateCharacterMood('sad');
+                }
+                
+                // Save everything
+                localStorage.setItem('pomodoros', JSON.stringify(pomodorosCompleted));
+                localStorage.setItem('currentStreak', currentStreak.toString());
+                localStorage.setItem('bestStreak', bestStreak.toString());
+                localStorage.setItem('totalFocusMinutes', totalFocusMinutes.toString());
+                
+                pomodoroCount.textContent = pomodorosCompleted;
+                updateStreakDisplay();
+            } else {
+                // Completed break
+                updateCharacterMood('happy');
+                showDialogue('encouragement');
+            }
+
+            isWorkSession = !isWorkSession;
+            timeLeft = isWorkSession ? 25 * 60 : 5 * 60;
+            timerMode.textContent = isWorkSession ? 'FOCUS TIME' : 'BREAK TIME';
+            
+            if (!isWorkSession) {
+                showDialogue('breakStart');
+            }
+            
+            updateDisplay();
+            pauseTimer();
+        }
+
+        startBtn.addEventListener('click', startTimer);
+        pauseBtn.addEventListener('click', pauseTimer);
+        resetBtn.addEventListener('click', resetTimer);
+        skipBtn.addEventListener('click', skipSession);
+
+        // ============================================
+        // MUSIC PLAYER
+        // ============================================
+        const audioPlayer = document.getElementById('audioPlayer');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        let isPlaying = false;
+
+        audioPlayer.volume = 0.5;
+
+        playPauseBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                audioPlayer.pause();
+                playPauseBtn.textContent = '▶';
+            } else {
+                audioPlayer.play();
+                playPauseBtn.textContent = '⏸';
+            }
+            isPlaying = !isPlaying;
+        });
+
+        volumeSlider.addEventListener('input', (e) => {
+            audioPlayer.volume = e.target.value / 100;
+        });
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        renderTasks();
+        updateDisplay();
+        updateStreakDisplay();
+        showDialogue('welcome');
+
+        // Random encouragement every 15 minutes when not in session
+        setInterval(() => {
+            if (!isRunning) {
+                showDialogue('encouragement');
+            }
+        }, 900000); // 15 minutes
+    </script>
+</body>
+</html>
+
